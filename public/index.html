@@ -1,17 +1,89 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Список дел</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+  <div id="todo-list">
+    <div class="header">
+      <h1>{{ header || 'Welcome' }}</h1>
+      <button v-if="editing" @click="doEdit(false)" class="btn btn-cancel">Отмена</button>
+      <button v-else @click="doEdit(true)" class="btn btn-primry">Добавить</button>
+    </div>
+    
+    <div v-if="editing" class="add-item-form">
+      <input 
+        @keyup.enter="saveItem" 
+        type="text" v-model="newItem" placeholder = "Добавить">
+      <label>
+        <input type="checkbox" v-model="newItemHighPriority">
+        Высокий приоритет
+      </label>
+      <button 
+        @click="saveItem" 
+        class="btn btn-primary">
+        Сохранить
+      </button>
+    </div>
+    <p v-if="items.length === 0">Хорошая работа! Вы выполнили все задачи!</p>
+    <ul>
+      <li 
+        v-for="item in reversedItems" 
+        @click="togglePurchased(item)"
+        :key="item.id"
+        class="static-class"
+        :class="{strikeout: item.purchased, priority: item.highPriority}"
+      >
+        {{item.label}}
+      </li>
+    </ul>
+  </div>
+  <script src="https://unpkg.com/vue@3"></script>
+  <script>
+    const todoListApp = Vue.createApp({
+      data() {
+        return {
+          header: 'Список дел',
+          editing: false,
+          newItem: '',
+          newItemHighPriority: false,
+          items:[
+            {id: 1, label:'Купить продукты', purchased: true, highPriority: false},
+            {id: 2, label:'Написать отчёт', purchased: true, highPriority: false},
+            {id: 3, label:'Погулять с собакой', purchased: false, highPriority: true},
+          ]
+        }
+      },
+      computed:{
+        reversedItems(){
+          return [...this.items].reverse()
+        }
+      },
+      methods:{
+        saveItem(){
+          this.items.push({
+            id:this.items.length + 1, 
+            label: this.newItem,
+            highPriority: this.newItemHighPriority
+          })
+          this.newItem = ""
+          this.newItemHighPriority = false
+        },
+        doEdit(editing){
+          this.editing = editing
+          this.newItem = ""
+          this.newItemHighPriority = false
+        },
+        togglePurchased(item){
+          item.purchased = !item.purchased
+        }
+      }
+    }).mount('#todo-list')
+  </script>
+</body>
+
 </html>
